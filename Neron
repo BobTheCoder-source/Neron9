@@ -1,205 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neron Forum</title>
-  <style>
-    /* Basic Styles */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    #navbar {
-      background-color: #333;
-      color: white;
-      padding: 10px;
-    }
-
-    #navbar ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    #navbar ul li {
-      display: inline;
-      margin-right: 20px;
-    }
-
-    #navbar ul li a {
-      color: white;
-      text-decoration: none;
-    }
-
-    .page {
-      display: none;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    /* Chatbox Styles */
-    #chatbox {
-      margin-top: 20px;
-    }
-
-    #messageInput {
-      width: 100%;
-      height: 100px;
-      padding: 10px;
-    }
-
-    /* Popup Styles */
-    .popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .popup-content {
-      background-color: white;
-      padding: 20px;
-      text-align: center;
-      width: 300px;
-      border-radius: 10px;
-    }
-
-    .popup button {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #333;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .popup button:hover {
-      background-color: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neron Forum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        h1, h2, p {
+            text-align: center;
+        }
+        textarea, input[type="text"], button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 80%;
+        }
+        .messages {
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+    </style>
 </head>
 <body>
-
-  <!-- Welcoming Pop-Up -->
-  <div id="welcome-popup" class="popup">
-    <div class="popup-content">
-      <h2>Welcome to Neron Forum</h2>
-      <p>
-        Please note that this site prohibits NSFW content, pornography, and any other inappropriate material. 
-        Users found violating these rules will be banned. Please keep the content respectful.
-      </p>
-      <button onclick="closeWelcome()">Skip</button>
+    <div id="nicknameScreen" class="container">
+        <h1>Welcome to Neron Forum!</h1>
+        <p>Enter your nickname to proceed:</p>
+        <input type="text" id="nickname" placeholder="Your nickname..." required>
+        <button onclick="saveNickname()">Continue</button>
     </div>
-  </div>
 
-  <!-- Main Navigation Bar -->
-  <div id="navbar">
-    <ul>
-      <li><a href="#home" onclick="showPage('home')">Home</a></li>
-      <li><a href="#about" onclick="showPage('about')">About</a></li>
-      <li><a href="#contact" onclick="showPage('contact')">Contact</a></li>
-    </ul>
-  </div>
-
-  <!-- Main Content -->
-  <div id="home" class="page">
-    <h1>Global Forum</h1>
-    <div id="chatbox">
-      <textarea id="messageInput" placeholder="Write a message..."></textarea>
-      <button onclick="sendMessage()">Send</button>
+    <div id="rulesScreen" class="container hidden">
+        <h1>Important Rules</h1>
+        <p>Please read the rules before entering the forum:</p>
+        <ul>
+            <li>NSFW (Not Safe For Work) content is strictly prohibited.</li>
+            <li>Do not post any pornographic material.</li>
+            <li>Respect all community members and avoid hateful or offensive language.</li>
+            <li>Ensure all shared images comply with community guidelines.</li>
+        </ul>
+        <button onclick="enterForum()">I Agree</button>
     </div>
-    <div id="messages"></div>
-  </div>
 
-  <div id="about" class="page" style="display: none;">
-    <h1>About Neron</h1>
-    <p>
-      Neron is a global forum designed for people to connect, share ideas, and engage in productive discussions. 
-      It is a safe place for users to discuss topics ranging from technology to lifestyle. We strive to maintain a friendly and welcoming environment for everyone.
-    </p>
-    <p>Our mission is to promote free speech and creativity, but also to maintain respect for one another.</p>
-  </div>
+    <div id="forumScreen" class="container hidden">
+        <h1>Welcome to the Forum!</h1>
+        <h2 id="greeting"></h2>
+        <textarea id="messageInput" placeholder="Write your message..."></textarea>
+        <button onclick="postMessage()">Post Message</button>
+        <div id="messages" class="messages">
+            <!-- Messages will appear here -->
+        </div>
+    </div>
 
-  <div id="contact" class="page" style="display: none;">
-    <h1>Contact Us</h1>
-    <p>If you have any questions or feedback, feel free to reach out to us at:</p>
-    <p><strong>Neron999454@outlook.com</strong></p>
-  </div>
+    <script>
+        let messages = []; // Store messages
 
-  <script>
-    // Function to close the welcome popup
-    function closeWelcome() {
-      document.getElementById('welcome-popup').style.display = 'none';
-    }
+        function saveNickname() {
+            const nickname = document.getElementById("nickname").value;
+            if (!nickname) {
+                alert("Please enter a nickname!");
+                return;
+            }
+            localStorage.setItem("nickname", nickname);
+            document.getElementById("nicknameScreen").classList.add("hidden");
+            document.getElementById("rulesScreen").classList.remove("hidden");
+        }
 
-    // Function to show pages based on the navigation bar click
-    function showPage(pageId) {
-      // Hide all pages
-      const pages = document.querySelectorAll('.page');
-      pages.forEach(page => {
-        page.style.display = 'none';
-      });
+        function enterForum() {
+            const nickname = localStorage.getItem("nickname");
+            if (!nickname) return;
+            document.getElementById("rulesScreen").classList.add("hidden");
+            document.getElementById("forumScreen").classList.remove("hidden");
+            document.getElementById("greeting").innerText = `Hello, ${nickname}!`;
+            loadMessages();
+        }
 
-      // Show the selected page
-      document.getElementById(pageId).style.display = 'block';
-    }
+        function postMessage() {
+            const message = document.getElementById("messageInput").value;
+            if (!message) {
+                alert("Please write a message!");
+                return;
+            }
+            const nickname = localStorage.getItem("nickname");
+            const newMessage = { nickname, text: message };
+            messages.push(newMessage);
+            localStorage.setItem("messages", JSON.stringify(messages));
+            document.getElementById("messageInput").value = "";
+            loadMessages();
+        }
 
-    // Initialize the page to show the home page by default
-    showPage('home');
+        function loadMessages() {
+            const savedMessages = localStorage.getItem("messages");
+            if (savedMessages) {
+                messages = JSON.parse(savedMessages);
+            }
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML = "";
+            messages.forEach(msg => {
+                const messageElement = document.createElement("div");
+                messageElement.innerText = `${msg.nickname}: ${msg.text}`;
+                messagesDiv.appendChild(messageElement);
+            });
+        }
 
-    // Function to send a message in the chat
-    function sendMessage() {
-      const message = document.getElementById('messageInput').value;
-
-      if (message.trim() !== '') {
-        // Retrieve saved messages from localStorage or create an empty array
-        let messages = JSON.parse(localStorage.getItem('messages')) || [];
-        
-        // Add the new message to the messages array
-        messages.push(message);
-
-        // Save the updated messages array back to localStorage
-        localStorage.setItem('messages', JSON.stringify(messages));
-
-        // Display the messages on the page
-        displayMessages();
-      }
-
-      // Clear the input field
-      document.getElementById('messageInput').value = '';
-    }
-
-    // Function to display messages from localStorage
-    function displayMessages() {
-      const messages = JSON.parse(localStorage.getItem('messages')) || [];
-      const messagesDiv = document.getElementById('messages');
-      
-      // Clear the messages div before displaying updated messages
-      messagesDiv.innerHTML = '';
-
-      // Loop through messages and display them
-      messages.forEach(message => {
-        const messageElement = document.createElement('p');
-        messageElement.textContent = message;
-        messagesDiv.appendChild(messageElement);
-      });
-    }
-
-    // Load messages when the page is loaded
-    window.onload = displayMessages;
-  </script>
+        // Load nickname or reset to nickname screen
+        window.onload = function() {
+            const nickname = localStorage.getItem("nickname");
+            if (nickname) {
+                document.getElementById("nicknameScreen").classList.add("hidden");
+                document.getElementById("rulesScreen").classList.remove("hidden");
+            }
+        };
+    </script>
 </body>
 </html>
